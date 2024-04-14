@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+/* Define styles for the Link */
+.overview-item-link {
+    color: #000; /* Default color */
+    text-decoration: none; /* Remove default underline */
+    transition: color 0.3s ease; /* Add transition effect to color change */
+}
+
+/* Define styles for hover state */
+.overview-item-link:hover {
+    background-color: #E5E7EB; /* Change color on hover */
+}
