@@ -1,0 +1,42 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model categories {
+  id          Int    @id @default(autoincrement())
+  identifier  String @db.VarChar(255)
+  name        String @db.VarChar(255)
+  description String? @db.VarChar(255)
+  goals       goals[]
+}
+
+model goals {
+  id            Int     @id @default(autoincrement())
+  category_id   Int
+  unit_id       Int?
+  name          String  @db.VarChar(255)
+  description   String? @db.VarChar(255)
+  type          String  @db.VarChar(255)
+  year          Int
+  target        Decimal @db.Decimal(15, 2)
+  current_value Decimal @default(0.00) @db.Decimal(15, 2)
+  category      categories @relation(fields: [category_id], references: [id])
+}
+
+model results {
+  id      Int      @id @default(autoincrement())
+  date    DateTime @db.Date
+  goal_id Int?
+  value   Decimal? @default(0.00) @db.Decimal(15, 2)
+}
+
+model units {
+  id         Int    @id @default(autoincrement())
+  identifier String @db.VarChar(255)
+  name       String @db.VarChar(255)
+}

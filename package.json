@@ -1,0 +1,42 @@
+{
+  "name": "yp-24",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@headlessui/react": "^1.7.19",
+    "@heroicons/react": "^2.1.3",
+    "@prisma/client": "^5.12.1",
+    "@tanstack/react-query": "^5.37.1",
+    "@trpc/client": "^11.0.0-rc.373",
+    "@trpc/next": "^11.0.0-rc.373",
+    "@trpc/react-query": "^11.0.0-rc.373",
+    "@trpc/server": "^11.0.0-rc.373",
+    "axios": "^1.6.7",
+    "flowbite": "^2.3.0",
+    "http-proxy-middleware": "^2.0.6",
+    "next": "^14.2.3",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@tanstack/eslint-plugin-query": "^5.17.22",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "autoprefixer": "^10.4.19",
+    "critters": "^0.0.22",
+    "eslint": "^8",
+    "eslint-config-next": "14.1.0",
+    "postcss": "^8.4.38",
+    "prisma": "^5.12.1",
+    "tailwindcss": "^3.4.3",
+    "typescript": "^5"
+  }
+}
