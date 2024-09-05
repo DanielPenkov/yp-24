@@ -10,9 +10,6 @@ export function Card({value, target, currentTarget, description, type, identifie
     type: 'incremental' | 'decremental';
     identifier: string;
 }) {
-
-    console.log(identifier);
-
     return (
         <div className="rounded-xl bg-gray-50 p-2 shadow-sm">
             <div className="flex p-4">

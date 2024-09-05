@@ -17,14 +17,18 @@ export function Table({rows, data, categoryIdentifier}: {
             </tr>
             </thead>
             <tbody className="bg-white dark:bg-slate-800">
-            {data.map((row) => (
+            {
+                data.map((row) => (
                 <tr key={Math.random()}>
-                    {row.map((cell) => (
+                    {
+                        row.map((cell) => (
                         <td key={Math.random()}
                             className="border-b dark:border-slate-600 p-4 pl-8 text-left">{<YpStringFormatter amount={cell} identifier={categoryIdentifier}> </YpStringFormatter>}</td>
-                    ))}
+                    ))
+                    }
                 </tr>
-            ))}
+            ))
+            }
             </tbody>
         </table>
     );

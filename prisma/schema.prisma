@@ -26,13 +26,15 @@ model goals {
   target        Decimal @db.Decimal(15, 2)
   current_value Decimal @default(0.00) @db.Decimal(15, 2)
   category      categories @relation(fields: [category_id], references: [id])
+  results       results[]
 }
 
 model results {
   id      Int      @id @default(autoincrement())
   date    DateTime @db.Date
-  goal_id Int?
+  goal_id Int
   value   Decimal? @default(0.00) @db.Decimal(15, 2)
+  goal    goals @relation(fields: [goal_id], references: [id])
 }
 
 model units {

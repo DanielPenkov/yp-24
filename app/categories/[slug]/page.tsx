@@ -5,13 +5,14 @@ import {Suspense} from "react";
 import {Table} from "@/app/ui/table";
 import {capitalizeFirstLetter} from "@/app/util/yp-strings";
 import {trpc} from "@/server/client";
-import { useRouter } from 'next/navigation'
-
-
+import { usePathname } from "next/navigation";
 
 export default function Category() {
-    const categoryIdentifier = 'finance';
-    const data = trpc.overview.fetchOverview.useQuery().data;
+    const pathname = usePathname();
+    const segments = pathname.split('/');
+    const categoryIdentifier = segments[2];
+
+    const data = trpc.overview.overview.useQuery({identifier: categoryIdentifier}).data;
 
     let tableRows = [];
     let tableData = [];
