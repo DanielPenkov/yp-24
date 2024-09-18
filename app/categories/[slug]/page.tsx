@@ -12,11 +12,9 @@ export default function Category() {
     const segments = pathname.split("/");
     const categoryIdentifier = segments[2];
 
-
     const { data, refetch } = trpc.overview.overview.useQuery({ identifier: categoryIdentifier });
     const addData = trpc.results.addData.useMutation({
         onSuccess: () => {
-            // Refetch the data after successful mutation
             refetch();
         },
     });
@@ -25,36 +23,46 @@ export default function Category() {
         identifier: categoryIdentifier,
     }).data;
 
-    let tableRows = [];
     let tableData = [];
     let goals = [];
+    let goalCurrentValues = {}
 
     if (data) {
-        tableRows = data[0].tableColumns;
-        tableData = data[0].tableRows;
-        goals = data[0].goals;
+        goals = data.goals;
+        tableData = data.tableData;
+        goalCurrentValues = getGoalsCurrentValues(goals);
     }
 
-    // State to control modal visibility
     const [isOpen, setIsOpen] = useState(false);
-
-    // State to handle input values
     const [formData, setFormData] = useState({
         date: new Date().toISOString().split("T")[0],
         goalId: "0",
         value: "0",
     });
 
-    // Function to handle form changes
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData((prevData) => ({
-            ...prevData,
-            [name]: value,
-        }));
+
+        console.log(name);
+        console.log(value);
+
+        setFormData((prevData) => {
+            let updatedData = {
+                ...prevData,
+                [name]: value,
+            };
+
+            if (name === 'goalId') {
+                updatedData = {
+                    ...updatedData,
+                    value: goalCurrentValues[value] ?? 0,
+                };
+            }
+
+            return updatedData;
+        });
     };
 
-    // Function to handle form submission
     const handleSubmit = (e) => {
         e.preventDefault();
 
@@ -138,8 +146,8 @@ export default function Category() {
                                         className="w-full px-3 py-2 border border-gray-300 rounded"
                                         required
                                     >
-                                        <option value="" disabled>
-                                            Select a goal
+                                        <option value="">
+                                            --- Select a goal ---
                                         </option>
 
                                         {goalsData?.map((goal: any) => {
@@ -192,8 +200,22 @@ export default function Category() {
 
             {/* Table */}
             <div className={"mt-5"}>
-                <Table rows={tableRows} data={tableData} categoryIdentifier={categoryIdentifier}></Table>
+                <Table
+                    goals={goals}
+                    data={tableData}
+                    categoryIdentifier={categoryIdentifier}
+                ></Table>
             </div>
         </>
     );
+}
+
+function getGoalsCurrentValues(goals: any) {
+    let goalsCurrentValues: any = {};
+
+    goals.forEach((goal: any) => {
+        goalsCurrentValues[goal.id] = goal.current_value;
+    });
+
+    return goalsCurrentValues;
 }

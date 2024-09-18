@@ -2,7 +2,7 @@ import React from 'react';
 
 const YpStringFormatter = ({ amount, identifier }: {
     amount: any;
-    identifier: string;
+    identifier: any;
 
 }) => {
     if (isNaN(amount)) {

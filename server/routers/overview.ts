@@ -10,7 +10,6 @@ export const overviewRouter = router({
       .input(z.object({ identifier: z.string() }))
       .query(async ({ input }) => {
         const { identifier } = input;
-
         const data =  await prisma.categories.findFirst({
           where: {
             identifier: identifier
@@ -28,88 +27,74 @@ export const overviewRouter = router({
           }
         });
 
-        if (data) {
-          const tableColumns = getTableColumns(data);
-          const goals = getGoals(data);
-          const tableRows = getTableRows(tableColumns, data);
-
-          return [{
-            "name": data.name,
-            "goals": goals,
-            "tableColumns": tableColumns,
-            "tableRows": tableRows
-          }];
+        if (!data) {
+          return {};
         }
+
+        const goals = getGoals(data);
+        const tableData = getTableData(data);
+
+        return {
+          "goals": goals,
+          "tableData": tableData,
+        };
       }),
 });
 
-function getTableRows(tableColumns: any, data:any) {
-  const monthNames = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
-  ];
+function getTableData(data:any) {
+  const months = getMonths();
+  let tableData: any = {};
 
-  const currentMonth = new Date().getMonth();
-  const months = monthNames.slice(0, currentMonth + 1);
+  data.goals.map((goal: any) => {
+    data = goal.results;
+    const result: any = {};
+    tableData[goal.id] = {};
 
-  let response: any = [];
+    data.forEach((item: any) => {
+      const month = getMonthName(item.date);
 
-  months.map((month: any) => {
-    response.push([month])
-  });
-
-  let resultsByGoal: any = {};
-
-  data.goals.map((record: any) => {
-   resultsByGoal[record.name] = [];
-
-    record.results.map((result: any) => {
-      let monthName = result.date.toLocaleString('en-US', { month: 'long' });
-      resultsByGoal[record.name].push({[monthName]: result.value});
-    })
-  });
-
-  let final: any = [];
-
- months.map((month: any) => {
-    let datum = [month];
-
-    tableColumns.map((column: any) => {
-      if (column !== "Month") {
-        resultsByGoal[column].map((result: any) => {
-          if (result[month]) {
-            datum.push(result[month]);
-          }
-        });
+      if (!result[month] || new Date(item.date) > new Date(result[month].date)) {
+        result[month] = { value: item.value, date: item.date };
       }
     });
 
-    final.push(datum);
+    let lastValue = 0;
+    months.map((month: any) => {
+      let value = result[month] ? result[month].value : 0;
+
+      if (value === 0) {
+        value = lastValue;
+      } else {
+        lastValue = value;
+      }
+
+      tableData[goal.id][month] = value;
+    })
   });
 
- response = [];
-
- final.map((row: any) => {
-   if (row.length > 1) {
-     response.push(row);
-   }
- });
-
- return response;
+ return tableData;
 }
 
 function getGoals(data: any) {
-  const goals = data.goals.map((goal: any) => {
+  return data.goals.map((goal: any) => {
+
     return {
+      id: goal.id,
       name: goal.name,
       type: goal.type,
       target: goal.target,
-      current_value: goal.results[0].value,
+      current_value: getLatestValue(goal.results),
       current_target: getGoalCurrentTarget(goal)
     }
   });
+}
 
-  return goals;
+function getLatestValue(results:any) {
+  const latestRecord = results.reduce((latest: any, current: any) => {
+    return new Date(latest.date) > new Date(current.date) ? latest : current;
+  });
+
+  return latestRecord.value;
 }
 
 function getGoalCurrentTarget(goal: any) {
@@ -119,17 +104,15 @@ function getGoalCurrentTarget(goal: any) {
     return new Date(current.date) < new Date(earliest.date) ? current : earliest;
   });
 
-    const now = new Date();
-    const start = new Date(now.getFullYear(), 0, 0);
-    // @ts-ignore
-    const diff = now - start;
-    const oneDay = 1000 * 60 * 60 * 24;
-    const day = Math.floor(diff / oneDay);
-    const yearCompleted: number = day / 365;
-    const target: number = goal.target.toNumber()
+    const currentMonth = new Date().getMonth();
+    const yearCompleted: number = currentMonth / 12;
+
+    const target: number = goal.target.toNumber();
 
     if (goal.type === "decremental") {
       const goalInitialValue: number = goalInitialRecord ? (goalInitialRecord.value ? goalInitialRecord.value.toNumber() : 0.00) : 0.00;
+
+      console.log(goalInitialValue - ((goalInitialValue - target) * yearCompleted));
 
       return goalInitialValue - ((goalInitialValue - target) * yearCompleted);
     }
@@ -137,12 +120,17 @@ function getGoalCurrentTarget(goal: any) {
     return target * yearCompleted;
 }
 
-function getTableColumns(data: any) {
-  const tableColumns = data.goals.map((goal: any) => {
-    return goal.name
-  });
+function getMonthName(dateStr: any) {
+  const date = new Date(dateStr);
+  return date.toLocaleString('default', { month: 'long' });
+}
 
-  tableColumns.unshift('Month');
+function getMonths() {
+  const monthNames = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
 
-  return tableColumns;
+  const currentMonth = new Date().getMonth();
+  return monthNames.slice(0, currentMonth + 1);
 }
