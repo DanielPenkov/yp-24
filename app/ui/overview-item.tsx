@@ -23,7 +23,7 @@ export function OverviewItem({data}: {
                                     <div className="flex items-center">
                                         <div>
                                             <TrendingArrow value={goal.current_value} target={
-                                                trpc.results.getGoalInitialRecord.useQuery({ id: goal.id }).data ?? ''
+                                                trpc.results.getGoalExpectedValue.useQuery({ id: goal.id }).data ?? ''
                                             }
                                                            type={goal.type} style={"h-8 m-5"}></TrendingArrow>
                                         </div>
@@ -39,11 +39,11 @@ export function OverviewItem({data}: {
                                     <div className="flex items-center">
                                         <div className="min-w-0">
                                             <p className={`truncate text-sm font-medium md:text-base`}>
-                                                <YpStringFormatter identifier={goal.name} amount={goal.current_value}></YpStringFormatter>
+                                               <YpStringFormatter identifier={goal.name} amount={goal.current_value}></YpStringFormatter>
                                             </p>
                                             <p className="hidden text-sm text-gray-500 sm:block text-center font-bold">
                                                 <YpStringFormatter identifier={goal.name} amount={
-                                                    trpc.results.getGoalInitialRecord.useQuery({ id: goal.id }).data ?? ''
+                                                    trpc.results.getGoalExpectedValue.useQuery({ id: goal.id }).data ?? ''
                                                 }></YpStringFormatter>
                                             </p>
                                         </div>

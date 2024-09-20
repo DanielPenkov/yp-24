@@ -7,7 +7,7 @@ import {opt} from "ts-interface-checker";
 const prisma = new PrismaClient();
 
 export const resultsRouter = router({
-    getGoalInitialRecord: procedure
+    getGoalExpectedValue: procedure
         .input(z.object({ id: z.number() }))
         .query(async ({ input }) => {
             const { id } = input;
@@ -28,22 +28,18 @@ export const resultsRouter = router({
             });
 
             if (goalInitialRecord && goal) {
-                const now = new Date();
-                const start = new Date(now.getFullYear(), 0, 0);
-                // @ts-ignore
-                const diff = now - start;
-                const oneDay = 1000 * 60 * 60 * 24;
-                const day = Math.floor(diff / oneDay);
-                const yearCompleted: number = day / 365;
-                const target: number = goal.target.toNumber()
+                const currentMonth = new Date().getMonth();
+                const yearCompleted: number = currentMonth / 12;
+
+                const target: number = goal.target.toNumber();
 
                 if (goal.type === "decremental") {
                     const goalInitialValue: number = goalInitialRecord ? (goalInitialRecord.value ? goalInitialRecord.value.toNumber() : 0.00) : 0.00;
 
-                    return goalInitialValue - ((goalInitialValue - target) * yearCompleted);
+                    return Math.ceil(goalInitialValue - ((goalInitialValue - target) * yearCompleted));
                 }
 
-                return target * yearCompleted;
+                return Math.ceil(target * yearCompleted);
             }
         }),
     addData: procedure
@@ -53,17 +49,36 @@ export const resultsRouter = router({
             date: z.string()
         }))
         .mutation(async (opts) => {
-            console.log('opq');
             const {input } = opts;
 
             try {
+                const latestRecord = await prisma.results.findFirst({
+                    where: {
+                        goal_id: input.goal_id
+                    },
+                    orderBy: {
+                        date: 'desc',
+                    },
+                });
+
                 await prisma.results.create({
                     data: {
                         date: new Date(input.date),
                         value: input.value,
                         goal_id: input.goal_id
                     }
-                })
+                });
+
+                if (latestRecord && latestRecord.date < new Date(input.date)) {
+                    await prisma.goals.update({
+                        where: {
+                            id: input.goal_id
+                        },
+                        data: {
+                            current_value: input.value
+                        }
+                    })
+                }
             } catch (e) {
                 console.log(e);
             }

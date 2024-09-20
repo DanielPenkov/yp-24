@@ -42,10 +42,6 @@ export default function Category() {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-
-        console.log(name);
-        console.log(value);
-
         setFormData((prevData) => {
             let updatedData = {
                 ...prevData,

@@ -6,6 +6,7 @@ import { trpc } from "@/server/client";
 
 export default function Overview() {
     const categories = trpc.categories.getCategoriesWithGoals.useQuery().data;
+    console.log(categories);
 
 
     return (
