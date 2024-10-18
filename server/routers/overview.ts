@@ -7,15 +7,27 @@ const prisma = new PrismaClient();
 
 export const overviewRouter = router({
   overview: procedure
-      .input(z.object({ identifier: z.string() }))
+      .input(z.object({
+        identifier: z.string(),
+        year: z.string(),
+      }))
       .query(async ({ input }) => {
         const { identifier } = input;
+        const { year } = input;
         const data =  await prisma.categories.findFirst({
           where: {
-            identifier: identifier
+            identifier: identifier,
+            goals: {
+              some: {
+                year: Number(year)
+              }
+            }
           },
           include: {
             goals: {
+              where: {
+                year: Number(year),  // Filter goals to only include those from the given year
+              },
               include: {
                 results: {
                   orderBy: {

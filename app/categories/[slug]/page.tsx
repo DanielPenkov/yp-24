@@ -6,13 +6,19 @@ import { Table } from "@/app/ui/table";
 import { capitalizeFirstLetter } from "@/app/util/yp-strings";
 import { trpc } from "@/server/client";
 import { usePathname } from "next/navigation";
+import {useYear} from "@/components/Provider/Provider";
 
 export default function Category() {
+    const { year } = useYear();
     const pathname = usePathname();
     const segments = pathname.split("/");
     const categoryIdentifier = segments[2];
 
-    const { data, refetch } = trpc.overview.overview.useQuery({ identifier: categoryIdentifier });
+    const { data, error, isError, refetch } = trpc.overview.overview.useQuery({
+        identifier: categoryIdentifier,
+        year: year
+    });
+
     const addData = trpc.results.addData.useMutation({
         onSuccess: () => {
             refetch();
@@ -21,6 +27,7 @@ export default function Category() {
 
     const goalsData = trpc.goals.getGoalsByCategoryIdentifier.useQuery({
         identifier: categoryIdentifier,
+        year: year
     }).data;
 
     let tableData = [];
@@ -28,7 +35,7 @@ export default function Category() {
     let goalCurrentValues = {}
 
     if (data) {
-        goals = data.goals;
+        goals = data.goals ?? [];
         tableData = data.tableData;
         goalCurrentValues = getGoalsCurrentValues(goals);
     }
@@ -71,7 +78,7 @@ export default function Category() {
     };
 
     return (
-        <>
+        <div className="container mx-auto px-4 py-8">
             <header className="bg-white shadow">
                 <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 mt-2 mb-20 text-center">
                     <h1 className="text-3xl font-bold tracking-tight text-gray-900">
@@ -202,12 +209,16 @@ export default function Category() {
                     categoryIdentifier={categoryIdentifier}
                 ></Table>
             </div>
-        </>
+        </div>
     );
 }
 
 function getGoalsCurrentValues(goals: any) {
     let goalsCurrentValues: any = {};
+
+    if (!goals) {
+        return {};
+    }
 
     goals.forEach((goal: any) => {
         goalsCurrentValues[goal.id] = goal.current_value;

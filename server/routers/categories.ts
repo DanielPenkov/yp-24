@@ -6,13 +6,43 @@ import {z} from "zod";
 const prisma = new PrismaClient();
 
 export const categoriesRouter = router({
-  getCategoriesWithGoals: procedure.query(async () => {
+  getCategoriesWithGoals: procedure
+      .input(z.object({ year: z.string() }))
+      .query(async ({ input }) => {
+        const { year } = input;
+
     return prisma.categories.findMany({
+      where: {
+        goals: {
+          some: {
+            year: Number(year)
+          }
+        }
+      },
       include: {
-        goals: true,
+        goals: {
+          where: {
+            year: Number(year)
+          }
+        },
       }
     });
   }),
+  getCategoriesByYear: procedure
+      .input(z.object({ year: z.string() }))
+      .query(async ({ input }) => {
+        const { year } = input;
+
+        return prisma.categories.findMany({
+          where: {
+            goals: {
+              some: {
+                year: Number(year)
+              }
+            }
+          },
+        });
+      }),
   getCategories: procedure.query(async () => {
     return prisma.categories.findMany();
   }),

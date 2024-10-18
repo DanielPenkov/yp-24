@@ -6,8 +6,13 @@ export function Table({goals, data, categoryIdentifier}: {
     data: any;
     categoryIdentifier: string
 }) {
+    const monts = goals.length > 0 ? getMonths() : [];
 
-    const monts = getMonths();
+    if (monts.length === 0) {
+        return (
+            <div>No data available</div>
+        );
+    }
 
     return (
         <table className="border-collapse table-auto w-full text-sm ">
