@@ -1,14 +1,16 @@
-import YpStringFormatter from "@/app/util/yp-string-formatter";
+import YpStringFormatter from "@/util/yp-string-formatter";
 import React from "react";
+import {useYear} from "@/components/Provider/Provider";
 
 export function Table({goals, data, categoryIdentifier}: {
     goals: any;
     data: any;
     categoryIdentifier: string
 }) {
-    const monts = goals.length > 0 ? getMonths() : [];
+    const { year } = useYear();
+    const months = goals.length > 0 ? getMonths(year) : [];
 
-    if (monts.length === 0) {
+    if (months.length === 0) {
         return (
             <div>No data available</div>
         );
@@ -30,7 +32,7 @@ export function Table({goals, data, categoryIdentifier}: {
             </thead>
             <tbody className="bg-white dark:bg-slate-800">
             {
-                monts.map((month) => (
+                months.map((month) => (
                     <tr key={Math.random()}>
                         <td key={Math.random()}
                             className="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">
@@ -55,11 +57,16 @@ export function Table({goals, data, categoryIdentifier}: {
     );
 }
 
-function getMonths() {
+function getMonths(year: any) {
     const monthNames = [
         "January", "February", "March", "April", "May", "June",
         "July", "August", "September", "October", "November", "December"
     ];
+
+
+    if (year < new Date().getFullYear()) {
+        return monthNames;
+    }
 
     const currentMonth = new Date().getMonth();
     return monthNames.slice(0, currentMonth + 1);

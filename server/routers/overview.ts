@@ -44,7 +44,7 @@ export const overviewRouter = router({
         }
 
         const goals = getGoals(data);
-        const tableData = getTableData(data);
+        const tableData = getTableData(data, year);
 
         return {
           "goals": goals,
@@ -53,8 +53,8 @@ export const overviewRouter = router({
       }),
 });
 
-function getTableData(data:any) {
-  const months = getMonths();
+function getTableData(data:any, year: any) {
+  const months = getMonths(year);
   let tableData: any = {};
 
   data.goals.map((goal: any) => {
@@ -137,11 +137,16 @@ function getMonthName(dateStr: any) {
   return date.toLocaleString('default', { month: 'long' });
 }
 
-function getMonths() {
+function getMonths(year: any) {
   const monthNames = [
     "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"
   ];
+
+  if (year < new Date().getFullYear()) {
+    return monthNames;
+  }
+
 
   const currentMonth = new Date().getMonth();
   return monthNames.slice(0, currentMonth + 1);

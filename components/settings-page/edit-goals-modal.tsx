@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
 import {trpc} from "@/server/client";
 
-export default function GoalModal({ isOpen, onClose, goalData, onSubmit } : { isOpen: boolean, onClose: () => void, goalData: any, onSubmit: (goal: any) => void })  {
+export default function EditGoalModal({ isOpen, onClose, goalData, onSubmit } : { isOpen: boolean, onClose: () => void, goalData: any, onSubmit: (goal: any) => void })  {
     const [goal, setGoal] = useState(goalData || {
         name: '',
         description: '',

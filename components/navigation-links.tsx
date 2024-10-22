@@ -2,13 +2,11 @@
 
 import { useEffect, useState } from "react"; // Import useEffect and useState
 import Link from "next/link";
-import { useRouter } from "next/router"; // Import useRouter for navigation
 import { trpc } from "@/server/client";
-import { HomeIcon } from "@heroicons/react/24/outline";
-import YearDropdown from "@/app/ui/year-dropdown";
-import { CogIcon } from "@heroicons/react/16/solid";
+import YearDropdown from "@/components/year-dropdown";
 import {usePathname} from "next/navigation";
 import {useYear} from "@/components/Provider/Provider";
+import {Icon} from "@/components/ui/icon";
 
 function classNames(...classes: any) {
     return classes.filter(Boolean).join(" ");
@@ -20,7 +18,6 @@ export default function NavigationLinks() {
     const pathSegments = path.split("/");
     const { year } = useYear();
 
-    // Ensure the component is mounted before rendering
     useEffect(() => {
         setIsMounted(true);
     }, []);
@@ -48,13 +45,13 @@ export default function NavigationLinks() {
                     key={"Home"}
                     href={"/"}
                     className={classNames(
-                        pathSegments[1] === "" ? "bg-gray-900 text-white" : "text-gray-800 hover:bg-gray-700 hover:text-white",
-                        "rounded-md px-3 py-2 text-sm font-medium flex items-center"
+                        pathSegments[1] === "" ? "bg-gray-900 text-white text-center" : "text-gray-800 hover:bg-gray-700 hover:text-white text-center",
+                        "rounded-md px-3 py-2 text-sm font-medium text-center"
                     )}
                     aria-current={pathSegments[1] === "" ? "page" : undefined}
                 >
-                    <HomeIcon className="h-5 mr-2" />
-                    Home
+                    <Icon identifier={'home'} style={"h-8 m-2 rounded-full "}></Icon>
+                    {"Home"}
                 </Link>
 
                 {/* Dynamic Category Links */}
@@ -63,11 +60,12 @@ export default function NavigationLinks() {
                         key={item.name}
                         href={"/categories" + "/" + item.identifier}
                         className={classNames(
-                            pathSegments[2] === item.identifier ? "bg-gray-900 text-white" : "text-gray-800 hover:bg-gray-700 hover:text-white",
-                            "rounded-md px-3 py-2 text-sm font-medium"
+                            pathSegments[2] === item.identifier ? "bg-gray-900 text-white text-center" : "text-gray-800 hover:bg-gray-700 hover:text-white text-center",
+                            "rounded-md px-3 py-2 text-sm font-medium text-center"
                         )}
                         aria-current={pathSegments[2] === item.identifier ? "page" : undefined}
                     >
+                        <Icon identifier={item.identifier} style={"h-8 m-2 rounded-full text-center"}></Icon>
                         {item.name}
                     </Link>
                 ))}
@@ -77,12 +75,12 @@ export default function NavigationLinks() {
                     key={"Settings"}
                     href={"/settings"}
                     className={classNames(
-                        pathSegments[1] === "settings" ? "bg-gray-900 text-white" : "text-gray-800 hover:bg-gray-700 hover:text-white",
-                        "rounded-md px-3 py-2 text-sm font-medium flex items-center"
+                        pathSegments[1] === "settings" ? "bg-gray-900 text-white text-center" : "text-gray-800 hover:bg-gray-700 hover:text-white text-center",
+                        "rounded-md px-3 py-2 text-sm font-medium text-center"
                     )}
                     aria-current={pathSegments[1] === "settings" ? "page" : undefined}
                 >
-                    <CogIcon className="h-5 mr-2" />
+                    <Icon identifier={'cogWheel'} style={"h-8 m-2 rounded-full text-center"}></Icon>
                     Settings
                 </Link>
             </div>

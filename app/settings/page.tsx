@@ -2,17 +2,22 @@
 
 import React, { useState, useEffect } from 'react';
 import { trpc } from "@/server/client";
-import {useYear} from "@/components/Provider/Provider";
-import {capitalizeFirstLetter} from "@/app/util/yp-strings";
-import GoalModal from "@/app/ui/goals-modal";
+import { useYear } from "@/components/Provider/Provider";
+import { capitalizeFirstLetter } from "@/util/yp-strings";
+import EditGoalModal from "@/components/settings-page/edit-goals-modal";
+import Tabs from "@/components/settings-page/tabs";
+import GoalList from "@/components/settings-page/goal-list";
+import ProfileSettings from "@/components/settings-page/profile-settings";
 
 const GoalSettings = () => {
-    const {year} = useYear();
+    const { year } = useYear();
     const [goals, setGoals] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedGoal, setSelectedGoal] = useState(null);
+    const [openCategories, setOpenCategories] = useState({});
+    const [activeTab, setActiveTab] = useState('goals'); // Tab state
 
-    const {data: goalsData, refetch} = trpc.goals.getGoalsByYear.useQuery({year});
+    const { data: goalsData, refetch } = trpc.goals.getGoalsByYear.useQuery({ year });
 
     useEffect(() => {
         if (goalsData) {
@@ -74,71 +79,48 @@ const GoalSettings = () => {
         }
     };
 
-    const groupedGoals = goals.reduce((acc, goal) => {
-        const categoryName = goal.category.name;
-        if (!acc[categoryName]) {
-            acc[categoryName] = [];
-        }
-        acc[categoryName].push(goal);
-        return acc;
-    }, {});
+    const toggleCategory = (categoryName) => {
+        setOpenCategories((prev) => ({
+            ...prev,
+            [categoryName]: !prev[categoryName],
+        }));
+    };
 
     return (
         <div className="container mx-auto px-4 py-8">
             <header className="bg-white shadow">
-                <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 mt-2 mb-20 text-center">
+                <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 mt-2 mb-4 text-center">
                     <h1 className="text-3xl font-bold tracking-tight text-gray-900">
-                        {capitalizeFirstLetter('Goal Settings for ' + year)}
+                        {capitalizeFirstLetter('Settings for ' + year)}
                     </h1>
                 </div>
             </header>
 
+            {/* Render Tabs */}
+            <Tabs activeTab={activeTab} setActiveTab={setActiveTab} />
 
-            {/* Add New Goal Button */}
-            <div className="mb-8 text-right">
-                <button
-                    onClick={handleAddGoal}
-                    className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600"
-                >
-                    Add New Goal
-                </button>
-            </div>
-
-            {/* Existing Goals Grouped by Category */}
-            {Object.keys(groupedGoals).map((categoryName) => (
-                <div key={categoryName} className="mb-8">
-                    <h3 className="text-xl font-semibold mb-4"> {categoryName}</h3>
-                    <ul className="space-y-4">
-                        {groupedGoals[categoryName].map((goal) => (
-                            <li
-                                key={goal.id}
-                                className="bg-white shadow-sm rounded-lg p-4 flex justify-between items-center"
-                            >
-                                <div>
-                                    <p className="font-medium">{goal.name}</p>
-                                    <p className="text-gray-500">
-                                        Current: {goal.current_value} / Target: {goal.target}
-                                    </p>
-                                </div>
-                                <button
-                                    onClick={() => handleEditGoal(goal)}
-                                    className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
-                                >
-                                    Edit
-                                </button>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            ))}
+            {/* Conditional Rendering based on Active Tab */}
+            {activeTab === 'goals' ? (
+                <GoalList
+                    goals={goals}
+                    handleEditGoal={handleEditGoal}
+                    toggleCategory={toggleCategory}
+                    openCategories={openCategories}
+                    handleAddGoal={handleAddGoal}
+                />
+            ) : (
+                <ProfileSettings />
+            )}
 
             {/* Goal Modal */}
-            <GoalModal
-                isOpen={isModalOpen}
-                onClose={handleModalClose}
-                goalData={selectedGoal}
-                onSubmit={handleSubmitGoal}
-            />
+            {isModalOpen && (
+                <EditGoalModal
+                    isOpen={isModalOpen}
+                    onClose={handleModalClose}
+                    goalData={selectedGoal}
+                    onSubmit={handleSubmitGoal}
+                />
+            )}
         </div>
     );
 };

@@ -1,5 +1,5 @@
 import "./globals.css";
-import NavigationLinks from "@/app/ui/navigation-links";
+import NavigationLinks from "@/components/navigation-links";
 import { Provider } from "@/components/Provider/Provider";
 
 export default function RootLayout({

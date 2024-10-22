@@ -1,6 +1,6 @@
-import {TrendingArrow} from "@/app/ui/trending-arrow";
-import {Icon} from "@/app/ui/icon";
-import YpStringFormatter from "@/app/util/yp-string-formatter";
+import {TrendingArrow} from "@/components/ui/trending-arrow";
+import {Icon} from "@/components/ui/icon";
+import YpStringFormatter from "@/util/yp-string-formatter";
 
 export function Card({value, target, currentTarget, description, type, identifier}: {
     value: number;

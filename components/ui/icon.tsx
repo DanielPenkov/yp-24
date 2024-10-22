@@ -3,15 +3,23 @@ import {
     BanknotesIcon,
     HomeIcon,
     CurrencyDollarIcon,
-    MusicalNoteIcon
+    MusicalNoteIcon,
+    StarIcon,
+    BookOpenIcon,
+    CodeBracketIcon,
+    CogIcon
 } from '@heroicons/react/24/outline';
 
 
 const iconMap = {
-    loan: HomeIcon,
+    home: HomeIcon,
     savings: BanknotesIcon,
     finance: CurrencyDollarIcon,
-    art: MusicalNoteIcon
+    art: MusicalNoteIcon,
+    health: StarIcon,
+    reading: BookOpenIcon,
+    dev: CodeBracketIcon,
+    cogWheel: CogIcon
 };
 
 export function Icon({identifier, style}: {
