@@ -1,6 +1,11 @@
 import { initTRPC } from "@trpc/server";
 
-const trpc = initTRPC.create();
+type Context = {};
+
+const trpc = initTRPC.context<Context>().create();
 
 export const router = trpc.router;
 export const procedure = trpc.procedure;
+
+export type AppRouter = typeof router;
+export type Procedure = typeof procedure;
