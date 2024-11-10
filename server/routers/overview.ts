@@ -1,10 +1,11 @@
 import { procedure, router } from "../trpc";
-import {Prisma, PrismaClient} from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import { z } from "zod";
-import { Category, TableData } from "types/modelTypes";
-import { Goal } from "types/modelTypes";
-import { Result } from "types/modelTypes";
-import { Decimal } from 'decimal.js';
+import { Category} from "types/models";
+import { Goal } from "types/models";
+import { Result } from "types/models";
+import Decimal = Prisma.Decimal;
+import {CategoryTableData} from "types/utils";
 
 const prisma = new PrismaClient();
 
@@ -17,7 +18,7 @@ export const overviewRouter = router({
       }),
     )
     .query(
-      async ({ input }): Promise<{ goals: Goal[]; tableData: TableData }> => {
+      async ({ input }): Promise<{ goals: Goal[]; tableData: CategoryTableData }> => {
         const { identifier, year } = input;
         const data = await prisma.categories.findFirst({
           where: {
@@ -59,9 +60,9 @@ export const overviewRouter = router({
     ),
 });
 
-function getTableData(data: Category, year: string): TableData {
+function getTableData(data: Category, year: string): CategoryTableData {
   const months = getMonths(year);
-  let tableData: TableData = {};
+  let tableData: CategoryTableData = {};
 
   if (!data.goals) {
     return tableData;
@@ -97,7 +98,7 @@ function getTableData(data: Category, year: string): TableData {
       let value = 0.0;
 
       if (result[month] && result[month].value !== null) {
-          value = result[month].value?.toNumber() ?? 0.0;
+        value = result[month].value?.toNumber() ?? 0.0;
       }
 
       if (value === 0) {
@@ -113,34 +114,25 @@ function getTableData(data: Category, year: string): TableData {
   return tableData;
 }
 
-function getGoals(data: Category): Goal[] {
-
+function getGoals(data: Category): Goal[]|[] {
   if (!data.goals) {
     return [];
   }
 
   return data.goals.map((goal) => {
-    return {
-      id: goal.id,
-      category_id: goal.category_id,
-      description: goal.description,
-      unit_id: goal.unit_id,
-      year: goal.year,
-      name: goal.name,
-      type: goal.type,
-      target: goal.target,
-      current_value: new Decimal(getLatestValue(goal.results ?? [])),
-      current_target: new Decimal(getGoalCurrentTarget(goal)),
-    };
+    goal.current_target = new Prisma.Decimal(getGoalCurrentTarget(goal));
+    goal.current_value = new Prisma.Decimal(getLatestValue(goal.results ?? []));
+
+    return goal;
   });
 }
 
-function getLatestValue(results: Result[]): number {
+function getLatestValue(results: Result[]): Decimal {
   const latestRecord = results.reduce((latest, current) => {
     return new Date(latest.date) > new Date(current.date) ? latest : current;
   });
 
-  return latestRecord.value?.toNumber() ?? 0.0;
+  return new Prisma.Decimal(latestRecord.value?.toNumber() ?? 0.0);
 }
 
 function getGoalCurrentTarget(goal: Goal): number {
@@ -163,7 +155,7 @@ function getGoalCurrentTarget(goal: Goal): number {
 
   if (goal.type === "decremental") {
     const goalInitialValue: number = goalInitialRecord
-      ? goalInitialRecord.value?.toNumber() ?? 0.0
+      ? (goalInitialRecord.value?.toNumber() ?? 0.0)
       : 0.0;
 
     return goalInitialValue - (goalInitialValue - target) * yearCompleted;

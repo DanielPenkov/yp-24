@@ -1,26 +1,34 @@
 import {
-    ArrowTrendingUpIcon,
-    ArrowTrendingDownIcon
-} from '@heroicons/react/24/outline';
+  ArrowTrendingUpIcon,
+  ArrowTrendingDownIcon,
+} from "@heroicons/react/24/outline";
 
-export function TrendingArrow({value, target, type, style}: {
-    value: any;
-    target: any;
-    style: string;
-    type: 'decremental' | 'incremental';
-}) {
-    switch (type) {
-        case 'decremental':
-            if (value > target) {
-                return <ArrowTrendingDownIcon className={style + " " + "text-red-500"}></ArrowTrendingDownIcon>
-            }
+type TrendingArrowProps = {
+  value: number;
+  target: number;
+  style?: string;
+  type: "decremental" | "incremental";
+};
 
-            return <ArrowTrendingUpIcon className={style  + " " + "text-green-500"}></ArrowTrendingUpIcon>
-        case 'incremental':
-            if (value < target) {
-                return <ArrowTrendingDownIcon className={style  + " " + "text-red-500"}></ArrowTrendingDownIcon>
-            }
+export function TrendingArrow({
+  value,
+  target,
+  type,
+  style = "",
+}: TrendingArrowProps) {
+  switch (type) {
+    case "decremental":
+      return value > target ? (
+        <ArrowTrendingDownIcon className={`${style} text-red-500`} />
+      ) : (
+        <ArrowTrendingUpIcon className={`${style} text-green-500`} />
+      );
 
-            return <ArrowTrendingUpIcon className={style  + " " + "text-green-500"}></ArrowTrendingUpIcon>
-    }
+    case "incremental":
+      return value < target ? (
+        <ArrowTrendingDownIcon className={`${style} text-red-500`} />
+      ) : (
+        <ArrowTrendingUpIcon className={`${style} text-green-500`} />
+      );
+  }
 }

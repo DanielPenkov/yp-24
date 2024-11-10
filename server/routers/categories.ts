@@ -1,7 +1,7 @@
 import { procedure, router } from "../trpc";
 import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
-import {Category } from "types/modelTypes";
+import {Category } from "types/models";
 
 const prisma = new PrismaClient();
 const YearInputSchema = z.object({ year: z.string() });

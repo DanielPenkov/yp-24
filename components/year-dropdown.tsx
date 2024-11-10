@@ -1,20 +1,24 @@
-import React from "react";
+import React, { ChangeEvent } from "react";
 import { useYear } from "@/components/Provider/Provider";
 
-const YearDropdown = () => {
-    // @ts-ignore
-    const { year, setYear } = useYear();
+interface YearContext {
+    year: string;
+    setYear: (year: string) => void;
+}
+
+const YearDropdown: React.FC = () => {
+    const { year, setYear } = useYear() as YearContext; // Cast to YearContext for type safety
 
     // Years to display in the dropdown
     const years = Array.from({ length: 20 }, (_, i) => new Date().getFullYear() - i);
 
     // Handle change event when the user selects a year
-    const handleYearChange = (event: any) => {
-        setYear(event.target.value); // Update the context state
+    const handleYearChange = (event: ChangeEvent<HTMLSelectElement>) => {
+        setYear(event.target.value); // Update the context state with the selected year
     };
 
     return (
-        <div className="inline-flex items-center space-x-2"> {/* Flex container to align label and dropdown inline */}
+        <div className="inline-flex items-center space-x-2">
             {/* Dropdown */}
             <div className="relative">
                 <select

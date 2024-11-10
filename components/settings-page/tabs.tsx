@@ -1,4 +1,13 @@
-const Tabs = ({ activeTab, setActiveTab }) => {
+import React from 'react';
+
+type TabType = 'goals' | 'profile';
+
+interface TabsProps {
+    activeTab: TabType;
+    setActiveTab: (tab: TabType) => void;
+}
+
+const Tabs: React.FC<TabsProps> = ({ activeTab, setActiveTab }) => {
     return (
         <div className="mb-8 flex justify-center">
             <button

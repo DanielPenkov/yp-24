@@ -1,11 +1,8 @@
 import { procedure, router } from "../trpc";
 import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
-import {
-  Goal,
-  UpdateGoalInput,
-  CreateGoalInput,
-} from "types/modelTypes";
+import {Goal, Unit} from "types/models";
+import {CreateGoalInput, UpdateGoalInput} from "types/inputs";
 
 const prisma = new PrismaClient();
 
@@ -58,6 +55,7 @@ export const goalsRouter = router({
         description: z.string(),
         current_value: z.number(),
         target: z.number(),
+        unit_id: z.number().nullable(),
       }),
     )
     .mutation(async ({ input }: { input: UpdateGoalInput }): Promise<Goal> => {
@@ -94,7 +92,7 @@ export const goalsRouter = router({
       });
     }),
 
-  getUnits: procedure.query(async (): Promise<any> => {
+  getUnits: procedure.query(async (): Promise<Unit[]> => {
     return prisma.units.findMany();
   }),
 });

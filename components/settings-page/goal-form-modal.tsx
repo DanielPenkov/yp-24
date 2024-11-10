@@ -1,39 +1,55 @@
-import React, {useEffect, useState} from "react";
-import {trpc} from "@/server/client";
+import React, { useEffect, useState, ChangeEvent, FormEvent } from "react";
+import {Goal} from "types/models";
+import {Prisma} from "@prisma/client";
+import {getAllCategories} from "@/server/models/categories";
+import {getUnits} from "@/server/models/units";
+import {useYear} from "@/components/Provider/Provider";
 
-export default function EditGoalModal({ isOpen, onClose, goalData, onSubmit } : { isOpen: boolean, onClose: () => void, goalData: any, onSubmit: (goal: any) => void })  {
-    const [goal, setGoal] = useState(goalData || {
+interface EditGoalModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    goalData: Goal | null;
+    onSubmit: (goal: Goal) => void;
+}
+
+export default function GoalFormModal({ isOpen, onClose, goalData, onSubmit }: EditGoalModalProps) {
+    const { year } = useYear();
+    const [goal, setGoal] = useState<Goal>(goalData || {
+        id: 0,
         name: '',
         description: '',
         type: 'incremental',
-        current_value: 0,
-        target: 0,
-        year: new Date().getFullYear(),
+        current_value: new Prisma.Decimal(0),
+        target: new Prisma.Decimal(0),
+        year: Number(year),
         category_id: 1,
+        unit_id: null
     });
 
-    const categories = trpc.categories.getCategories.useQuery().data;
-    const units = trpc.goals.getUnits.useQuery().data;
+    const categories = getAllCategories();
+    const units = getUnits();
 
     useEffect(() => {
         setGoal(goalData || {
+            id: 0,
             name: '',
             description: '',
             type: 'incremental',
-            current_value: 0,
-            target: 0,
-            year: new Date().getFullYear(),
-            category_id: 1, // Default category
+            current_value: new Prisma.Decimal(0),
+            target: new Prisma.Decimal(0),
+            year: Number(year),
+            category_id: 1,
+            unit_id: null
         });
-    }, [goalData]);
+    }, [goalData, year]);
 
-    const handleInputChange = (e) => {
+    const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
 
         setGoal({ ...goal, [name]: value });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
         onSubmit(goal);
     };
@@ -55,17 +71,12 @@ export default function EditGoalModal({ isOpen, onClose, goalData, onSubmit } : 
                             className="w-full border border-gray-300 rounded-lg px-3 py-2 shadow-sm focus:outline-none focus:ring focus:ring-blue-200"
                             required
                         >
-                            <option value="">
-                                --- Select a category ---
-                            </option>
-
-                            {categories?.map((category: any) => {
-                                return (
-                                    <option key={Math.random()} value={category.id}>
-                                        {category.name}
-                                    </option>
-                                );
-                            })}
+                            <option value="">--- Select a category ---</option>
+                            {categories?.map((category) => (
+                                <option key={category.id} value={category.id}>
+                                    {category.name}
+                                </option>
+                            ))}
                         </select>
                     </div>
 
@@ -85,7 +96,7 @@ export default function EditGoalModal({ isOpen, onClose, goalData, onSubmit } : 
                         <input
                             type="text"
                             name="description"
-                            value={goal.description}
+                            value={goal.description ?? ''}
                             onChange={handleInputChange}
                             className="w-full border border-gray-300 rounded-lg px-3 py-2 shadow-sm focus:outline-none focus:ring focus:ring-blue-200"
                         />
@@ -109,22 +120,16 @@ export default function EditGoalModal({ isOpen, onClose, goalData, onSubmit } : 
                         <select
                             id="unitId"
                             name="unit_id"
-                            value={goal.unit_id}
+                            value={goal.unit_id || ''}
                             onChange={handleInputChange}
                             className="w-full border border-gray-300 rounded-lg px-3 py-2 shadow-sm focus:outline-none focus:ring focus:ring-blue-200"
-                            required
                         >
-                            <option value="">
-                                --- Select a unit ---
-                            </option>
-
-                            {units?.map((unit: any) => {
-                                return (
-                                    <option key={Math.random()} value={unit.id}>
-                                        {unit.name}
-                                    </option>
-                                );
-                            })}
+                            <option value="">--- Select a unit ---</option>
+                            {units?.map((unit) => (
+                                <option key={unit.id} value={unit.id}>
+                                    {unit.name}
+                                </option>
+                            ))}
                         </select>
                     </div>
 
@@ -133,7 +138,7 @@ export default function EditGoalModal({ isOpen, onClose, goalData, onSubmit } : 
                         <input
                             type="number"
                             name="current_value"
-                            value={goal.current_value}
+                            value={goal.current_value ? Number(goal.current_value) : ''}
                             onChange={handleInputChange}
                             className="w-full border border-gray-300 rounded-lg px-3 py-2 shadow-sm focus:outline-none focus:ring focus:ring-blue-200"
                         />
@@ -144,7 +149,7 @@ export default function EditGoalModal({ isOpen, onClose, goalData, onSubmit } : 
                         <input
                             type="number"
                             name="target"
-                            value={goal.target}
+                            value={goal.target ? Number(goal.target) : ''}
                             onChange={handleInputChange}
                             className="w-full border border-gray-300 rounded-lg px-3 py-2 shadow-sm focus:outline-none focus:ring focus:ring-blue-200"
                         />
