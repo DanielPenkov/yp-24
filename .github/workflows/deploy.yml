@@ -29,6 +29,12 @@ jobs:
           echo "${{ secrets.EC2_PEM_FILE }}" > ec2.pem
           chmod 600 ec2.pem
 
+      - name: Check PEM file creation
+        run: ls -l ec2.pem
+
+      - name: Print PEM file contents (for debugging)
+        run: cat ec2.pem
+
       - name: Sync built app to EC2
         run: |
           scp -o StrictHostKeyChecking=no -i ec2.pem -r .next/* ubuntu@3.126.146.145:/home/ubuntu/app
