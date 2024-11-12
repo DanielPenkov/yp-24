@@ -26,14 +26,18 @@ jobs:
 
       - name: Create .pem file
         run: |
-          echo "${{ secrets.EC2_PEM_FILE }}" > ec2.pem
+          echo -e "${{ secrets.EC2_PEM_FILE }}" > ec2.pem
           chmod 600 ec2.pem
 
-      - name: Check PEM file creation
+      - name: Verify .pem file creation
         run: ls -l ec2.pem
 
-      - name: Print PEM file contents (for debugging)
-        run: cat ec2.pem
+      - name: Ensure .pem file content is not empty
+        run: |
+          if [ ! -s ec2.pem ]; then
+            echo "Error: ec2.pem is empty or not created properly"
+            exit 1
+          fi
 
       - name: Sync built app to EC2
         run: |
@@ -48,6 +52,11 @@ jobs:
     needs: build
 
     steps:
+      - name: Create .pem file for deploy step
+        run: |
+          echo -e "${{ secrets.EC2_PEM_FILE }}" > ec2.pem
+          chmod 600 ec2.pem
+
       - name: SSH into EC2 and deploy
         run: |
           ssh -o StrictHostKeyChecking=no -i ec2.pem ubuntu@3.126.146.145 "cd /home/ubuntu/app && pm2 restart all"
