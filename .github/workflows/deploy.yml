@@ -24,9 +24,14 @@ jobs:
       - name: Build Next.js app
         run: npm run build
 
+      - name: Create .pem file
+        run: |
+          echo "${{ secrets.EC2_PEM_FILE }}" > ec2.pem
+          chmod 600 ec2.pem
+
       - name: Sync built app to EC2
         run: |
-          scp -o StrictHostKeyChecking=no -i ~/code/ssh/ec2.pem -r .next/* ubuntu@3.126.146.145:/home/ubuntu/app
+          scp -o StrictHostKeyChecking=no -i ec2.pem -r .next/* ubuntu@3.126.146.145:/home/ubuntu/app
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -39,8 +44,11 @@ jobs:
     steps:
       - name: SSH into EC2 and deploy
         run: |
-          ssh -o StrictHostKeyChecking=no -i /path/to/your-key.pem ubuntu@your-ec2-public-ip "cd /home/ubuntu/app && pm2 restart all"
+          ssh -o StrictHostKeyChecking=no -i ec2.pem ubuntu@3.126.146.145 "cd /home/ubuntu/app && pm2 restart all"
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
+
+      - name: Remove .pem file
+        run: rm ec2.pem
