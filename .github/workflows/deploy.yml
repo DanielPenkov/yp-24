@@ -1,4 +1,4 @@
-name: Deploy Next.js App to AWS
+name: Deploy Next.js App
 
 on:
   push:
@@ -6,64 +6,43 @@ on:
       - master
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set up Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: '21'
 
       - name: Install dependencies
         run: npm install
 
-      - name: Build Next.js app
+      - name: Build the Next.js app
         run: npm run build
-
-      - name: Create .pem file
-        run: |
-          echo -e "${{ secrets.EC2_PEM_FILE }}" > ec2.pem
-          chmod 600 ec2.pem
-
-      - name: Verify .pem file creation
-        run: ls -l ec2.pem
-
-      - name: Ensure .pem file content is not empty
-        run: |
-          if [ ! -s ec2.pem ]; then
-            echo "Error: ec2.pem is empty or not created properly"
-            exit 1
-          fi
-
-      - name: Sync built app to EC2
-        run: |
-          scp -o StrictHostKeyChecking=no -i ec2.pem -r * ubuntu@3.126.146.145:/home/ubuntu/app
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
+      - name: Deploy to EC2
+        uses: appleboy/scp-action@v0.2.1
+        with:
+          host: ${{ secrets.EC2_PUBLIC_IP }}
+          username: ubuntu
+          key: ${{ secrets.EC2_PEM_FILE }}
+          source: "./"
+          target: "/home/ubuntu/yp-24"
 
-    steps:
-      - name: Create .pem file for deploy step
-        run: |
-          echo -e "${{ secrets.EC2_PEM_FILE }}" > ec2.pem
-          chmod 600 ec2.pem
-
-      - name: SSH into EC2 and deploy
-        run: |
-          ssh -o StrictHostKeyChecking=no -i ec2.pem ubuntu@3.126.146.145 "cd /home/ubuntu/app && pm2 restart all"
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-
-      - name: Remove .pem file
-        run: rm ec2.pem
+      - name: Run PM2
+        uses: appleboy/ssh-action@v0.1.1
+        with:
+          host: ${{ secrets.EC2_PUBLIC_IP }}
+          username: ubuntu
+          key: ${{ secrets.EC2_PEM_FILE }}
+          script: |
+            cd /home/ubuntu/yp-24
+            npm install
+            npm run build
+            pm2 restart nextjs-app || pm2 start npm --name "nextjs-app" -- start
