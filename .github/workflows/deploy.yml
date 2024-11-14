@@ -46,3 +46,4 @@ jobs:
             npm install
             npm run build
             pm2 restart nextjs-app || pm2 start npm --name "nextjs-app" -- start
+          debug: true
