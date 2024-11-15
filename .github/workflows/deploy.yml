@@ -4,28 +4,22 @@ on:
   push:
     branches:
       - master
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '21'
-
       - name: Install dependencies
         run: npm install
-
       - name: Build the Next.js app
         run: npm run build
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-
       - name: Deploy to EC2
         uses: appleboy/scp-action@v0.1.4
         with:
@@ -34,17 +28,14 @@ jobs:
           key: ${{ secrets.EC2_PEM_FILE }}
           source: "./"
           target: "/home/ubuntu/yp-24"
-
       - name: Start SSH Agent and Add Key
         uses: webfactory/ssh-agent@v0.5.3
         with:
           ssh-private-key: ${{ secrets.EC2_PEM_FILE }}
-
       - name: Create .env file on EC2
         run: |
           ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_PUBLIC_IP }} "echo \"DATABASE_URL='${{ secrets.DATABASE_URL }}'\" > /home/ubuntu/yp-24/.env"
           ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_PUBLIC_IP }} "echo \"NEXT_PUBLIC_APP_URL='http://35.158.179.227'\" >> /home/ubuntu/yp-24/.env"
-
       - name: Run PM2 Commands via SSH
         run: |
           ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_PUBLIC_IP }} << 'EOF'
