@@ -1,6 +1,9 @@
 require('dotenv').config();
 const mysql = require('mysql2');
 
+
+console.log(process.env.DATABASE_URL);
+
 // Ensure that process.env.DATABASE_URL is correctly set
 if (!process.env.DATABASE_URL) {
     console.error('DATABASE_URL is not defined');
