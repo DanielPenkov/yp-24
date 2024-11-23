@@ -47,15 +47,70 @@ export const webhooksRouter = router({
     ),
 });
 
-function handleRequest(payload: { data: { metrics: WebhookDataMetric[] } }) {
+function handleRequest(payload: { data: {
+  metrics?: WebhookDataMetric[],
+  workouts?: WebhookDataMetric[]
+} }) {
   const metrics = payload.data.metrics;
+  const workouts = payload.data.workouts ?? [];
 
-  metrics.forEach(function (metric) {
-    if (metric.name === "weight_body_mass") {
-      saveBodyWeight(metric).catch((error) => {
-        console.error('Error saving body weight:', error);
+  if (metrics) {
+    metrics.forEach(function (metric) {
+      if (metric.name === "weight_body_mass") {
+        saveBodyWeight(metric).catch((error) => {
+          console.error('Error saving body weight:', error);
+        })
+      }
+    });
+  }
+
+  if (workouts) {
+    workouts.forEach(function (workout) {
+      saveWorkout(workout).catch((error) => {
+        console.error('Error saving workout:', error);
       })
-    }
+    })
+  }
+}
+
+async function saveWorkout(metric: WebhookDataMetric) {
+  if (metric.name !== "Outdoor Run") {
+    console.log('Not a run');
+    return;
+  }
+
+  const goal = await prisma.goals.findFirst({
+    where: {
+      name: "Running",
+      year: Number(new Date().getFullYear().toString()),
+    },
+  });
+
+  if (!goal) {
+    throw new Error("Goal with name 'Running' not found");
+  }
+
+  if (!metric.start) {
+    return;
+  }
+
+  const date = new Date(metric.start);
+  const formattedDate = date.toISOString().split('T')[0];
+  const recordExists = await checkExistingResultData(formattedDate, goal.id);
+
+  if (recordExists) {
+    return;
+  }
+
+  const latestRunningResult = await getLatestResult(goal.id)
+  const latestRunningValue = latestRunningResult ? latestRunningResult.value : 0;
+
+  await prisma.results.create({
+    data: {
+      date: new Date(metric.start),
+      value: Number(latestRunningValue) + (metric.distance?.qty ?? 0),
+      goal_id: goal.id,
+    },
   });
 }
 
@@ -66,6 +121,10 @@ async function saveBodyWeight(metric: WebhookDataMetric) {
       year: Number(new Date().getFullYear().toString()),
     },
   });
+
+  if (!metric.data) {
+    return;
+  }
 
   if (!goal) {
     throw new Error("Goal with name 'Weight' not found");
@@ -106,3 +165,25 @@ async function checkExistingResultData(date: string, goalId: number) {
     return false;
   }
 }
+
+async function getLatestResult(goalId: number) {
+
+  try {
+    return prisma.results.findFirst({
+      where: {
+        goal_id: goalId,
+      },
+      orderBy: {
+        date: 'desc'
+      },
+    });
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error(error.message);
+    } else {
+      console.error("Unknown error occurred");
+    }
+    return false;
+  }
+}
+

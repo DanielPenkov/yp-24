@@ -20,8 +20,13 @@ export type CreateGoalInput = {
 
 export type WebhookDataMetric = {
     name: string;
-    data: WebhookDataItem[],
-    units: string;
+    data?: WebhookDataItem[],
+    distance?: {
+        units: string;
+        qty: number
+    }
+    start?: string;
+    units?: string;
 };
 
 export type WebhookDataItem = {
