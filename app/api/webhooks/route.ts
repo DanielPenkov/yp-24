@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { appRouter } from "@/server";
 import { handleErrorResponse } from "@/app/utils/errorHandler";
 
-export function createContext(req: NextRequest): {
+function createContext(req: NextRequest): {
   apiKey: string | null;
 } {
   try {
