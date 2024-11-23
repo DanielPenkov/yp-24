@@ -21,15 +21,15 @@ export default function Category() {
   const tableData = data.tableData;
 
   const trpcContext = trpc.useUtils();
-  const [modal, setModal] = useState({ show: false, type: "", message: "" });
+  const [modal, setAlert] = useState({ show: false, type: "", message: "" });
 
   function onSubmitSuccess() {
     refetchData(trpcContext, categoryIdentifier, year)
       .then(() => {
-          setModal({ show: true, type: 'success', message: 'Record added successfully' });
+          setAlert({ show: true, type: 'success', message: 'Record added successfully' });
       })
       .catch((error) => {
-          setModal({ show: true, type: 'error', message: `Error occurred: ${error.message}` });
+          setAlert({ show: true, type: 'error', message: `Error occurred: ${error.message}` });
       });
   }
 
@@ -47,7 +47,7 @@ export default function Category() {
         <AlertModal
           type={modal.type === "success" ? "success" : "error"}
           message={modal.message}
-          onClose={() => setModal({ show: false, type: "", message: "" })}
+          onClose={() => setAlert({ show: false, type: "", message: "" })}
         />
       )}
 

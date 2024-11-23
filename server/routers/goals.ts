@@ -35,6 +35,24 @@ export const goalsRouter = router({
 
       return [];
     }),
+    getGoalsByName: procedure
+        .input(
+            z.object({
+                name: z.string(),
+                year: z.string(),
+            }),
+        )
+        .query(async ({ input }): Promise<Goal|null> => {
+            const { name } = input;
+            const { year } = input;
+
+            return prisma.goals.findFirst({
+                where: {
+                    name: name,
+                    year: Number(year),
+                },
+            });
+        }),
 
   getGoalsByYear: procedure
     .input(z.object({ year: z.string() }))

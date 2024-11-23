@@ -17,3 +17,14 @@ export type CreateGoalInput = {
     current_value: number;
     target: number;
 };
+
+export type WebhookDataMetric = {
+    name: string;
+    data: WebhookDataItem[],
+    units: string;
+};
+
+export type WebhookDataItem = {
+    date: string;
+    qty?: number;
+};

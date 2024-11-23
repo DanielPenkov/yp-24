@@ -20,6 +20,7 @@ jobs:
         run: npm run build
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          API_KEY_SECRET: ${{ secrets.API_KEY_SECRET }}
       - name: Deploy to EC2
         uses: appleboy/scp-action@v0.1.4
         with:
