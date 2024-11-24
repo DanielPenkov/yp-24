@@ -29,9 +29,8 @@ export const resultsRouter = router({
         })) as Result | null;
 
         if (goalInitialRecord && goal) {
-          const currentMonth = new Date().getMonth();
-          const yearCompleted: number = currentMonth / 12;
-
+          const currentDay = getDayOfYear();
+          const yearCompleted: number = currentDay / 365;
           const target: number = (goal.target as Decimal).toNumber();
 
           if (goal.type === "decremental") {
@@ -87,3 +86,10 @@ export const resultsRouter = router({
       }
     }),
 });
+
+function getDayOfYear(date = new Date()) {
+  const startOfYear = new Date(date.getFullYear(), 0, 1);
+  const diff = date.getTime() - startOfYear.getTime();
+  const oneDay = 1000 * 60 * 60 * 24;
+  return Math.floor(diff / oneDay) + 1;
+}

@@ -107,6 +107,13 @@ async function saveRun(metric: WebhookDataMetric) {
       goal_id: goal.id,
     },
   });
+
+  await prisma.goals.update({
+    where: { id: goal.id },
+    data: {
+      current_value: Number(latestRunningValue) + (metric.distance?.qty ?? 0),
+    },
+  });
 }
 
 async function saveStrengthTraining(metric: WebhookDataMetric) {
@@ -147,6 +154,13 @@ async function saveStrengthTraining(metric: WebhookDataMetric) {
       goal_id: goal.id,
     },
   });
+
+  await prisma.goals.update({
+    where: { id: goal.id },
+    data: {
+      current_value: Number(latestTrainingValue) + 1,
+    },
+  });
 }
 
 async function saveWorkout(metric: WebhookDataMetric) {
@@ -181,11 +195,18 @@ async function saveBodyWeight(metric: WebhookDataMetric) {
     const recordExists = await checkExistingResultData(item.date, goal.id);
 
     if (!recordExists) {
-      await prisma.results.create({
+      prisma.results.create({
         data: {
           date: new Date(item.date),
           value: item.qty,
           goal_id: goal.id,
+        },
+      });
+
+      await prisma.goals.update({
+        where: { id: goal.id },
+        data: {
+          current_value: item.qty,
         },
       });
     }
