@@ -27,6 +27,7 @@ export type WebhookDataMetric = {
     }
     start?: string;
     units?: string;
+    duration?: number;
 };
 
 export type WebhookDataItem = {

@@ -73,12 +73,7 @@ function handleRequest(payload: { data: {
   }
 }
 
-async function saveWorkout(metric: WebhookDataMetric) {
-  if (metric.name !== "Outdoor Run") {
-    console.log('Not a run');
-    return;
-  }
-
+async function saveRun(metric: WebhookDataMetric) {
   const goal = await prisma.goals.findFirst({
     where: {
       name: "Running",
@@ -112,6 +107,58 @@ async function saveWorkout(metric: WebhookDataMetric) {
       goal_id: goal.id,
     },
   });
+}
+
+async function saveStrengthTraining(metric: WebhookDataMetric) {
+  const goal = await prisma.goals.findFirst({
+    where: {
+      name: "Strength Training",
+      year: Number(new Date().getFullYear().toString()),
+    },
+  });
+
+  if (!goal) {
+    throw new Error("Goal with name 'Strength Training' not found");
+  }
+
+  if (!metric.start) {
+    return;
+  }
+
+  const date = new Date(metric.start);
+  const formattedDate = date.toISOString().split('T')[0];
+  const recordExists = await checkExistingResultData(formattedDate, goal.id);
+
+  if (recordExists) {
+    return;
+  }
+
+  if ((metric.duration ?? 0) < 1000) {
+    return
+  }
+
+  const latestTrainingResult = await getLatestResult(goal.id)
+  const latestTrainingValue = latestTrainingResult ? latestTrainingResult.value : 0;
+
+  await prisma.results.create({
+    data: {
+      date: new Date(metric.start),
+      value: Number(latestTrainingValue) + 1,
+      goal_id: goal.id,
+    },
+  });
+}
+
+async function saveWorkout(metric: WebhookDataMetric) {
+  if (metric.name === "Outdoor Run") {
+    saveRun(metric).catch(function (error) {
+      console.error('Error saving run:', error);
+    })
+  } else if (metric.name === "Traditional Strength Training") {
+    saveStrengthTraining(metric).catch(function (error) {
+      console.error('Error saving strength training:', error);
+    })
+  }
 }
 
 async function saveBodyWeight(metric: WebhookDataMetric) {
