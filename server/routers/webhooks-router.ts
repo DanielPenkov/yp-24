@@ -9,7 +9,7 @@ const prisma = new PrismaClient();
 export const config = {
   api: {
     bodyParser: {
-      sizeLimit: "20mb",
+      sizeLimit: "200mb",
     },
   },
 };
@@ -195,7 +195,7 @@ async function saveBodyWeight(metric: WebhookDataMetric) {
     const recordExists = await checkExistingResultData(item.date, goal.id);
 
     if (!recordExists) {
-      prisma.results.create({
+      await prisma.results.create({
         data: {
           date: new Date(item.date),
           value: item.qty,
