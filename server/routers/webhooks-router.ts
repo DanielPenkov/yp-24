@@ -216,9 +216,14 @@ async function saveBodyWeight(metric: WebhookDataMetric) {
 async function checkExistingResultData(date: string, goalId: number) {
 
   try {
+    const originalDate = new Date(date);
+    const startOfDay = new Date(
+        Date.UTC(originalDate.getUTCFullYear(), originalDate.getUTCMonth(), originalDate.getUTCDate())
+    );
+
     const result = await prisma.results.findFirst({
       where: {
-        date: new Date(date),
+        date: startOfDay,
         goal_id: goalId,
       },
     });
