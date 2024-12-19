@@ -6,7 +6,7 @@ import {
   StarIcon,
   BookOpenIcon,
   CodeBracketIcon,
-  CogIcon,
+  CogIcon, HeartIcon,
 } from "@heroicons/react/24/outline";
 
 const iconMap: { [key: string]: any } = {
@@ -18,6 +18,7 @@ const iconMap: { [key: string]: any } = {
   reading: BookOpenIcon,
   dev: CodeBracketIcon,
   cogWheel: CogIcon,
+  spiritual: HeartIcon
 };
 
 export function Icon({
